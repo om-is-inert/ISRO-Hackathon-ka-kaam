@@ -23,3 +23,4 @@ temp_extracted/
 # OS files
 .DS_Store
 Thumbs.db
+*.h5
