@@ -1,0 +1,25 @@
+# PyTorch/Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local environments/virtualenvs
+.venv/
+venv/
+ENV/
+env/
+
+# Data and training artifacts
+data/
+checkpoints/
+runs/
+output/
+.ipynb_checkpoints/
+
+# Massive/temporary project archive files
+repo.zip
+temp_extracted/
+
+# OS files
+.DS_Store
+Thumbs.db
