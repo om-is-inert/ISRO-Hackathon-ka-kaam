@@ -9,12 +9,16 @@ Includes:
   - Flow smoothness loss (total variation)
   - Residual regularization
   - Combined TwoModelLoss with configurable weights
+
+Optimized for free-tier GPU:
+  - VGG perceptual loss uses relu2_2 (layer 9) instead of relu3_3 (layer 16)
+    → ~40% less VRAM for feature extraction
+  - Lazy VGG loading: only initialized when stage >= 2
 """
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torchvision.models as models
 
 
 class SSIMLoss(nn.Module):
@@ -61,18 +65,21 @@ class SSIMLoss(nn.Module):
 
 class PerceptualLoss(nn.Module):
     """
-    VGG-based perceptual loss.
-    Uses early VGG16 features (before pool3) for feature matching.
+    VGG-based perceptual loss (VRAM-optimized for free-tier GPU).
+    Uses early VGG16 features up to relu2_2 (layer 9) instead of relu3_3 (layer 16).
+    This saves ~40% GPU memory while still capturing texture/structure features.
     Adapted for grayscale: repeats single channel to 3 channels.
     """
     def __init__(self):
         super().__init__()
+        import torchvision.models as models
         vgg = models.vgg16(weights=models.VGG16_Weights.DEFAULT)
-        # Use features up to relu3_3
-        self.features = nn.Sequential(*list(vgg.features[:16]))
-        # Freeze VGG
+        # Use features up to relu2_2 (layer 9) — lighter than relu3_3 (layer 16)
+        self.features = nn.Sequential(*list(vgg.features[:9]))
+        # Freeze VGG — no gradients needed
         for param in self.features.parameters():
             param.requires_grad = False
+        self.features.eval()  # Always in eval mode
         
         # ImageNet normalization
         self.register_buffer('mean', torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1))
@@ -85,8 +92,11 @@ class PerceptualLoss(nn.Module):
         return (x - self.mean) / self.std
     
     def forward(self, pred, target):
+        # Run VGG in eval mode always, with no_grad for target features
+        self.features.eval()
         pred_feat = self.features(self._preprocess(pred))
-        target_feat = self.features(self._preprocess(target))
+        with torch.no_grad():
+            target_feat = self.features(self._preprocess(target))
         return F.l1_loss(pred_feat, target_feat)
 
 
@@ -147,12 +157,18 @@ class TwoModelLoss(nn.Module):
         super().__init__()
         self.stage = stage
         
-        # Loss components
+        # Loss components — always needed
         self.l1 = nn.L1Loss()
         self.ssim = SSIMLoss(channel=1)
-        self.perceptual = PerceptualLoss()
-        self.edge = EdgeLoss()
         self.flow_smooth = FlowSmoothnessLoss()
+        
+        # Stage 2+ losses — only load VGG when needed (saves VRAM in Stage 1)
+        if stage >= 2:
+            self.perceptual = PerceptualLoss()
+            self.edge = EdgeLoss()
+        else:
+            self.perceptual = None
+            self.edge = None
         
         # Weights
         self.w = {

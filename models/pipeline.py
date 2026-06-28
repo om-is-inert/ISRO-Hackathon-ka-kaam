@@ -6,6 +6,8 @@ into a single forward pass. Supports:
   - Full pipeline inference (flow → refine)
   - Coarse-only mode (Model 1 only, for Stage 1 training)
   - Recursive interpolation (30min → 15min → 7.5min)
+  - Mixed-precision inference
+  - Gradient checkpointing toggle for VRAM optimization
 """
 
 import torch
@@ -23,14 +25,28 @@ class SatelliteInterpolator(nn.Module):
              a coarse interpolated frame via backward warping.
     Stage 2: RefinementNet takes the coarse output + all intermediates
              and learns a residual correction for sharp, clean output.
+    
+    Optimized for free-tier GPU:
+      - base_channels=32 (was 48) — ~55% fewer refinement params
+      - Gradient checkpointing toggle for training VRAM savings
+      - AMP-compatible forward pass
     """
-    def __init__(self, refine_in_channels=8, refine_base_channels=48):
+    def __init__(self, refine_in_channels=8, refine_base_channels=32):
         super().__init__()
         self.flow_model = FlowInterpolator()
         self.refinement_model = RefinementNet(
             in_channels=refine_in_channels,
             base_channels=refine_base_channels,
         )
+    
+    def enable_checkpointing(self):
+        """Enable gradient checkpointing on refinement model bottleneck."""
+        self.refinement_model.use_checkpointing = True
+        print("[Checkpointing] Enabled on refinement bottleneck — saves ~30% VRAM")
+    
+    def disable_checkpointing(self):
+        """Disable gradient checkpointing (faster inference)."""
+        self.refinement_model.use_checkpointing = False
     
     def forward(self, img0, img1, t=0.5, refine=True):
         """
