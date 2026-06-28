@@ -726,6 +726,7 @@ if (hero && cloudDivider) {
 // ==========================================
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', e => {
+    if (anchor.classList.contains('social-dropdown-trigger') || anchor.getAttribute('href') === '#') return;
     e.preventDefault();
     const target = document.querySelector(anchor.getAttribute('href'));
     if (target) {
@@ -734,3 +735,32 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   });
 });
 
+// ==========================================
+// SOCIAL DROPDOWNS
+// ==========================================
+document.addEventListener('click', (e) => {
+    const isTrigger = e.target.closest('.social-dropdown-trigger');
+    
+    if (isTrigger) {
+        e.preventDefault();
+        const targetId = isTrigger.getAttribute('data-dropdown');
+        const targetDropdown = document.getElementById(targetId);
+        
+        // Close other dropdowns
+        document.querySelectorAll('.social-dropdown').forEach(dropdown => {
+            if (dropdown !== targetDropdown) dropdown.classList.remove('active');
+        });
+        
+        // Toggle current
+        if (targetDropdown) {
+            targetDropdown.classList.toggle('active');
+        }
+    } else {
+        // Close all if clicked outside
+        if (!e.target.closest('.social-dropdown-container')) {
+            document.querySelectorAll('.social-dropdown').forEach(dropdown => {
+                dropdown.classList.remove('active');
+            });
+        }
+    }
+});

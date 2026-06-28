@@ -14,6 +14,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- GSAP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body>
     
@@ -52,31 +54,46 @@
             <nav class="menu-nav">
                 <a href="#hero" class="menu-item">
                     <div class="menu-text-wrap">
-                        <span class="menu-text">HOME</span>
+                        <span class="menu-text">Overview</span>
                     </div>
                 </a>
-                <a href="#comparison" class="menu-item">
+                <a href="#metrics" class="menu-item">
                     <div class="menu-text-wrap">
-                        <span class="menu-text">ABOUT</span>
+                        <span class="menu-text">Results</span>
                     </div>
                 </a>
                 <a href="#architecture" class="menu-item">
                     <div class="menu-text-wrap">
-                        <span class="menu-text">PROJECTS</span>
+                        <span class="menu-text">Architecture</span>
                     </div>
                 </a>
                 <a href="#team" class="menu-item">
                     <div class="menu-text-wrap">
-                        <span class="menu-text">CONTACT</span>
+                        <span class="menu-text">Team</span>
                     </div>
                 </a>
             </nav>
             <div class="menu-footer">
                 <span class="footer-label">Socials</span>
                 <div class="footer-links">
-                    <a href="https://github.com" target="_blank">GitHub</a>
-                    <a href="#" target="_blank">Twitter</a>
-                    <a href="#" target="_blank">LinkedIn</a>
+                    <div class="social-dropdown-container">
+                        <a href="#" class="social-dropdown-trigger" data-dropdown="github-dropdown">GitHub</a>
+                        <div class="social-dropdown" id="github-dropdown">
+                            <a href="https://github.com/AdiCodexy" target="_blank" class="dropdown-item">Aditya Karale</a>
+                            <a href="https://github.com/om-is-inert" target="_blank" class="dropdown-item">Om Pandey</a>
+                            <a href="https://github.com/Nidhe-esh" target="_blank" class="dropdown-item">Niddesh</a>
+                            <a href="[Anjan's github]" target="_blank" class="dropdown-item">Anjan Kumar</a>
+                        </div>
+                    </div>
+                    <div class="social-dropdown-container">
+                        <a href="#" class="social-dropdown-trigger" data-dropdown="linkedin-dropdown">LinkedIn</a>
+                        <div class="social-dropdown" id="linkedin-dropdown">
+                            <a href="https://www.linkedin.com/in/aditya-karale-2b589632a/" target="_blank" class="dropdown-item">Aditya Karale</a>
+                            <a href="https://www.linkedin.com/in/om-pandey-53b648348/" target="_blank" class="dropdown-item">Om Pandey</a>
+                            <a href="https://www.linkedin.com/in/nidheeshgontiya/" target="_blank" class="dropdown-item">Niddesh</a>
+                            <a href="[Anjan's linkedin]" target="_blank" class="dropdown-item">Anjan Kumar</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -320,16 +337,17 @@
             <h2 class="section-heading reveal-element">Who built this?</h2>
             <div class="about-container reveal-element">
                 <p class="about-desc">
-                    SatFrame AI was built for the ISRO Hackathon 2025. 
-                    Our two-stage deep learning pipeline estimates optical flow 
-                    between consecutive geostationary satellite frames and synthesizes 
-                    a high-fidelity intermediate frame &mdash; effectively doubling the 
-                    temporal resolution of weather imagery without requiring new hardware or satellites.
+                    Built for ISRO Hackathon 2025.<br><br>
+                    A two-stage deep learning pipeline that synthesizes intermediate 
+                    satellite frames between two consecutive inputs &mdash; effectively 
+                    doubling the temporal resolution of geostationary weather imagery 
+                    without new hardware.<br><br>
+                    Trained on GOES-16. Tested on INSAT-3D.
                 </p>
                 <ul class="team-list">
                     <li class="team-card reveal-element">
-                        <div class="member-name">Aditya</div>
-                        <div class="member-role">ML Architecture, Training Pipeline & Frontend Dashboard</div>
+                        <div class="member-name">Aditya Karale</div>
+                        <div class="member-role">End-to-End Training Pipeline, Model Fine-tuning & Frontend Dashboard</div>
                         <div class="member-links">
                             <a href="https://github.com/AdiCodexy" target="_blank"><i data-feather="github"></i></a>
                             <a href="https://www.linkedin.com/in/aditya-karale-2b589632a/" target="_blank"><i data-feather="linkedin"></i></a>
@@ -337,26 +355,26 @@
                     </li>
                     <li class="team-card reveal-element">
                         <div class="member-name">Om Pandey</div>
-                        <div class="member-role">ML Model Development & Training</div>
+                        <div class="member-role">Data Ingestion, Preprocessing Pipeline & ML Model Architecture</div>
                         <div class="member-links">
-                            <a href="[Om's github URL]" target="_blank"><i data-feather="github"></i></a>
-                            <a href="[Om's linkedin URL]" target="_blank"><i data-feather="linkedin"></i></a>
+                            <a href="https://github.com/om-is-inert" target="_blank"><i data-feather="github"></i></a>
+                            <a href="https://www.linkedin.com/in/om-pandey-53b648348/" target="_blank"><i data-feather="linkedin"></i></a>
                         </div>
                     </li>
                     <li class="team-card reveal-element">
                         <div class="member-name">Niddesh</div>
-                        <div class="member-role">Frontend Development & Data Collection</div>
+                        <div class="member-role">Data Collection & Frontend Support</div>
                         <div class="member-links">
-                            <a href="[Niddesh's github URL]" target="_blank"><i data-feather="github"></i></a>
-                            <a href="[Niddesh's linkedin URL]" target="_blank"><i data-feather="linkedin"></i></a>
+                            <a href="https://github.com/Nidhe-esh" target="_blank"><i data-feather="github"></i></a>
+                            <a href="https://www.linkedin.com/in/nidheeshgontiya/" target="_blank"><i data-feather="linkedin"></i></a>
                         </div>
                     </li>
                     <li class="team-card reveal-element">
-                        <div class="member-name">Anjan</div>
-                        <div class="member-role">Data Collection & Preprocessing</div>
+                        <div class="member-name">Anjan Kumar</div>
+                        <div class="member-role">Data Collection & Preprocessing Support</div>
                         <div class="member-links">
-                            <a href="[Anjan's github URL]" target="_blank"><i data-feather="github"></i></a>
-                            <a href="[Anjan's linkedin URL]" target="_blank"><i data-feather="linkedin"></i></a>
+                            <a href="[Anjan's github]" target="_blank"><i data-feather="github"></i></a>
+                            <a href="[Anjan's linkedin]" target="_blank"><i data-feather="linkedin"></i></a>
                         </div>
                     </li>
                 </ul>
