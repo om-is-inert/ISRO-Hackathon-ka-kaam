@@ -10,10 +10,17 @@ Key design decisions:
   - CBAM attention: focuses on cloud edges and thermal boundaries
   - GroupNorm: more stable than BatchNorm for small batch sizes (Colab)
   - Tanh output head: bounded residuals for training stability
+
+Optimized for free-tier GPU (T4 15GB):
+  - base_channels reduced 48→32 (~55% fewer params)
+  - Gradient checkpointing on bottleneck to save VRAM
+  - Encoder uses 1 ResBlock instead of 2 (faster, similar quality)
 """
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+from torch.utils.checkpoint import checkpoint
 
 
 class ChannelAttention(nn.Module):
@@ -102,38 +109,37 @@ class RefinementNet(nn.Module):
       - Blend mask (1 ch)
     
     Output:
-      - Residual correction (1 ch), scaled by 0.1 for stability
+      - Residual correction (1 ch), scaled for stability
       - Final refined frame = coarse + residual
+    
+    Optimized: base_channels=32 (was 48), 1 ResBlock per stage (was 2),
+    gradient checkpointing on bottleneck.
     """
-    def __init__(self, in_channels=8, base_channels=48):
+    def __init__(self, in_channels=8, base_channels=32):
         super().__init__()
         C = base_channels
 
-        # ---- Encoder ----
+        # ---- Encoder (lighter: 1 ResBlock per stage) ----
         self.enc1 = nn.Sequential(
             nn.Conv2d(in_channels, C, 3, padding=1),
             nn.PReLU(C),
-            ResBlock(C),
             ResBlock(C),
         )
         self.enc2 = nn.Sequential(
             nn.Conv2d(C, C * 2, 3, stride=2, padding=1),
             nn.PReLU(C * 2),
             ResBlock(C * 2),
-            ResBlock(C * 2),
         )
         self.enc3 = nn.Sequential(
             nn.Conv2d(C * 2, C * 4, 3, stride=2, padding=1),
             nn.PReLU(C * 4),
             ResBlock(C * 4),
-            ResBlock(C * 4),
         )
 
-        # ---- Bottleneck ----
+        # ---- Bottleneck (gradient-checkpointed to save VRAM) ----
         self.bottleneck = nn.Sequential(
             nn.Conv2d(C * 4, C * 4, 3, stride=2, padding=1),
             nn.PReLU(C * 4),
-            ResBlock(C * 4),
             ResBlock(C * 4),
             ResBlock(C * 4),
         )
@@ -169,7 +175,14 @@ class RefinementNet(nn.Module):
         )
 
         # Learnable residual scale (starts small for stability)
-        self.residual_scale = nn.Parameter(torch.tensor(0.1))
+        self.residual_scale = nn.Parameter(torch.tensor(0.05))
+
+        # Whether to use gradient checkpointing (enabled during training)
+        self.use_checkpointing = False
+
+    def _bottleneck_forward(self, x):
+        """Bottleneck forward — wrapped for gradient checkpointing."""
+        return self.bottleneck(x)
 
     def forward(self, coarse_frame, warped0, warped1, img0, img1, flow, mask):
         """
@@ -202,8 +215,11 @@ class RefinementNet(nn.Module):
         e2 = self.enc2(e1)    # (B, 2C, H/2, W/2)
         e3 = self.enc3(e2)    # (B, 4C, H/4, W/4)
 
-        # Bottleneck
-        b = self.bottleneck(e3)  # (B, 4C, H/8, W/8)
+        # Bottleneck (with optional gradient checkpointing to save VRAM)
+        if self.use_checkpointing and self.training:
+            b = checkpoint(self._bottleneck_forward, e3, use_reentrant=False)
+        else:
+            b = self._bottleneck_forward(e3)
 
         # Decoder with skip connections
         d3 = self.up3(b)

@@ -22,6 +22,8 @@ def parse_args():
     p.add_argument('--num_workers', type=int, default=2)
     p.add_argument('--save_dir', type=str, default='checkpoints')
     p.add_argument('--log_dir', type=str, default='runs/stage2')
+    p.add_argument('--accum_steps', type=int, default=2, help='Gradient accumulation steps')
+    p.add_argument('--use_amp', action='store_true', help='Use automatic mixed precision')
     return p.parse_args()
 
 def validate(model, val_loader, criterion, device):
@@ -75,31 +77,48 @@ def main():
     writer = SummaryWriter(args.log_dir)
     best_val_loss = float('inf')
 
+    # AMP Setup
+    use_amp = args.use_amp and device.type == 'cuda'
+    scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
+    accum_steps = max(1, args.accum_steps)
+
+    print(f"AMP: {'ENABLED' if use_amp else 'DISABLED'} | Gradient Accumulation Steps: {accum_steps}")
+
     for epoch in range(args.epochs):
         model.train()
         model.flow_model.eval()  # Keep flow model in eval mode
         epoch_loss, batch_count = 0, 0
         t0 = time.time()
 
+        optimizer.zero_grad()
+
         for i, (f0, gt, f1) in enumerate(train_loader):
             f0, gt, f1 = f0.to(device), gt.to(device), f1.to(device)
-            out = model(f0, f1, t=0.5, refine=True)
-            loss, ld = criterion(out, gt)
+            
+            with torch.cuda.amp.autocast(enabled=use_amp):
+                out = model(f0, f1, t=0.5, refine=True)
+                loss, ld = criterion(out, gt)
+                # Normalize loss for accumulation
+                loss = loss / accum_steps
 
-            optimizer.zero_grad()
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.refinement_model.parameters(), max_norm=1.0)
-            optimizer.step()
-
-            epoch_loss += loss.item()
+            scaler.scale(loss).backward()
+            epoch_loss += loss.item() * accum_steps
             batch_count += 1
+
+            # Optimize step after accumulating enough gradients
+            if (i + 1) % accum_steps == 0 or (i + 1) == len(train_loader):
+                scaler.unscale_(optimizer)
+                torch.nn.utils.clip_grad_norm_(model.refinement_model.parameters(), max_norm=1.0)
+                scaler.step(optimizer)
+                scaler.update()
+                optimizer.zero_grad()
 
             if i % 20 == 0:
                 step = epoch * len(train_loader) + i
                 for k, v in ld.items():
                     writer.add_scalar(f'train/{k}', v, step)
                 print(f"  [{epoch}/{args.epochs}] batch {i}/{len(train_loader)} "
-                      f"loss={loss.item():.4f} "
+                      f"loss={loss.item() * accum_steps:.4f} "
                       f"refined_ssim={1-ld.get('refined_ssim',0):.4f} "
                       f"residual_reg={ld.get('residual_reg',0):.6f}")
 
