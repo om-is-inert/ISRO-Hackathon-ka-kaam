@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISRO Hackathon — 2-Model Satellite Frame Interpolation Dashboard</title>
+    <meta name="description" content="Dashboard showcasing the 2-Model Satellite Frame Interpolation Pipeline: Flow-based Interpolation + Attention-based Refinement for enhancing temporal resolution of geostationary satellite imagery.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Animated background -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <!-- Navigation -->
+    <nav class="nav" id="main-nav">
+        <div class="nav-brand">
+            <div class="nav-logo">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="12" stroke="url(#g1)" stroke-width="2"/><circle cx="14" cy="14" r="6" fill="url(#g1)" opacity="0.6"/><ellipse cx="14" cy="14" rx="12" ry="5" stroke="url(#g1)" stroke-width="1.5" opacity="0.4"/><defs><linearGradient id="g1" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs></svg>
+            </div>
+            <span>SatInterp<span class="accent">2M</span></span>
+        </div>
+        <div class="nav-links">
+            <a href="#hero" class="nav-link active" data-section="hero">Home</a>
+            <a href="#architecture" class="nav-link" data-section="architecture">Architecture</a>
+            <a href="#metrics" class="nav-link" data-section="metrics">Metrics</a>
+            <a href="#visual" class="nav-link" data-section="visual">Results</a>
+            <a href="#training" class="nav-link" data-section="training">Training</a>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero" id="hero">
+        <div class="hero-badge">ISRO Hackathon 2026</div>
+        <h1 class="hero-title">
+            2-Model Satellite<br>
+            <span class="gradient-text">Frame Interpolation</span>
+        </h1>
+        <p class="hero-subtitle">
+            Enhancing temporal resolution of geostationary satellite imagery using<br>
+            <strong>Flow-based Interpolation</strong> + <strong>CBAM Attention Refinement</strong>
+        </p>
+        <div class="hero-stats">
+            <div class="stat-card">
+                <div class="stat-value" id="stat-psnr">0.0272</div>
+                <div class="stat-label">Final L1 Loss (Stage 1)</div>
+                <div class="stat-delta positive">from 0.0570</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-ssim">0.0343</div>
+                <div class="stat-label">Final L1 Loss (E2E)</div>
+                <div class="stat-delta positive">from 0.4898</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-params">~15M</div>
+                <div class="stat-label">Total Parameters</div>
+                <div class="stat-delta neutral">Flow + Refine</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-speed">3</div>
+                <div class="stat-label">Training Stages</div>
+                <div class="stat-delta neutral">260 steps each</div>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <span>Scroll to explore</span>
+            <div class="scroll-arrow"></div>
+        </div>
+    </section>
+
+    <!-- Architecture -->
+    <section class="section" id="architecture">
+        <div class="section-header">
+            <div class="section-tag">System Design</div>
+            <h2>Pipeline Architecture</h2>
+            <p>A two-stage approach: coarse optical-flow interpolation followed by attention-guided residual refinement</p>
+        </div>
+
+        <div class="arch-pipeline">
+            <div class="arch-node arch-input">
+                <div class="arch-node-icon">🛰️</div>
+                <div class="arch-node-title">Frame t₀</div>
+                <div class="arch-node-sub">GOES-19 / INSAT-3DS<br>TIR Band · 512×512</div>
+            </div>
+            <div class="arch-arrow"><div class="arch-arrow-line"></div></div>
+            <div class="arch-node arch-model1">
+                <div class="arch-node-badge">Model 1</div>
+                <div class="arch-node-title">FlowInterpolator</div>
+                <div class="arch-node-sub">IFNet (3-level pyramid)<br>Backward Warp + Mask Blend</div>
+                <div class="arch-node-params">~10M params</div>
+            </div>
+            <div class="arch-arrow"><div class="arch-arrow-line"></div></div>
+            <div class="arch-node arch-intermediate">
+                <div class="arch-node-icon">📊</div>
+                <div class="arch-node-title">Coarse Frame</div>
+                <div class="arch-node-sub">+ Warped Frames<br>+ Flow Maps + Mask</div>
+            </div>
+            <div class="arch-arrow"><div class="arch-arrow-line"></div></div>
+            <div class="arch-node arch-model2">
+                <div class="arch-node-badge">Model 2</div>
+                <div class="arch-node-title">RefinementNet</div>
+                <div class="arch-node-sub">U-Net + CBAM Attention<br>Residual Learning</div>
+                <div class="arch-node-params">~5M params</div>
+            </div>
+            <div class="arch-arrow"><div class="arch-arrow-line"></div></div>
+            <div class="arch-node arch-output">
+                <div class="arch-node-icon">✨</div>
+                <div class="arch-node-title">Refined Frame</div>
+                <div class="arch-node-sub">Sharp, artifact-free<br>interpolated output</div>
+            </div>
+            <div class="arch-node arch-input arch-input-bottom">
+                <div class="arch-node-icon">🛰️</div>
+                <div class="arch-node-title">Frame t₁</div>
+                <div class="arch-node-sub">Next timestep<br>30-min cadence</div>
+            </div>
+        </div>
+
+        <!-- Model detail cards -->
+        <div class="model-cards">
+            <div class="model-card model-card-flow">
+                <div class="model-card-header">
+                    <div class="model-card-num">01</div>
+                    <h3>FlowInterpolator — IFNet</h3>
+                </div>
+                <div class="model-card-body">
+                    <div class="feature-list">
+                        <div class="feature"><span class="feature-dot"></span>3-Level Coarse-to-Fine Pyramid</div>
+                        <div class="feature"><span class="feature-dot"></span>Bi-directional Optical Flow (t₀→t, t₁→t)</div>
+                        <div class="feature"><span class="feature-dot"></span>Differentiable Backward Warping</div>
+                        <div class="feature"><span class="feature-dot"></span>Learnable Blend Mask (Sigmoid)</div>
+                        <div class="feature"><span class="feature-dot"></span>PReLU Activations throughout</div>
+                    </div>
+                    <div class="model-card-code">
+                        <code>flow, mask, warped₀, warped₁ = IFNet(img₀, img₁, t=0.5)</code>
+                        <code>coarse = mask × warped₀ + (1-mask) × warped₁</code>
+                    </div>
+                </div>
+            </div>
+            <div class="model-card model-card-refine">
+                <div class="model-card-header">
+                    <div class="model-card-num">02</div>
+                    <h3>RefinementNet — U-Net + CBAM</h3>
+                </div>
+                <div class="model-card-body">
+                    <div class="feature-list">
+                        <div class="feature"><span class="feature-dot"></span>8-channel input (coarse + warps + flow + mask + originals)</div>
+                        <div class="feature"><span class="feature-dot"></span>CBAM: Channel + Spatial Attention</div>
+                        <div class="feature"><span class="feature-dot"></span>GroupNorm (stable with small batches)</div>
+                        <div class="feature"><span class="feature-dot"></span>Residual Learning with Learnable Scale</div>
+                        <div class="feature"><span class="feature-dot"></span>Tanh output → bounded corrections</div>
+                    </div>
+                    <div class="model-card-code">
+                        <code>residual = UNet(concat_inputs) × scale</code>
+                        <code>refined = clamp(coarse + residual, 0, 1)</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Metrics -->
+    <section class="section section-dark" id="metrics">
+        <div class="section-header">
+            <div class="section-tag">Quantitative Results</div>
+            <h2>Performance Metrics</h2>
+            <p>Comparison of Coarse (Model 1 only) vs Refined (Model 1 + Model 2) outputs</p>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-chart-card" id="psnr-chart-card">
+                <div class="chart-title">Coarse L1 Loss — Stage 1 vs Stage 3</div>
+                <canvas id="psnrChart" width="500" height="280"></canvas>
+            </div>
+            <div class="metric-chart-card" id="ssim-chart-card">
+                <div class="chart-title">Coarse SSIM Loss — Stage 1 vs Stage 3</div>
+                <canvas id="ssimChart" width="500" height="280"></canvas>
+            </div>
+            <div class="metric-chart-card" id="mse-chart-card">
+                <div class="chart-title">Stage 2 — Refinement L1 Loss</div>
+                <canvas id="mseChart" width="500" height="280"></canvas>
+            </div>
+            <div class="metric-chart-card" id="mae-chart-card">
+                <div class="chart-title">Stage 2 — Refinement SSIM Loss</div>
+                <canvas id="maeChart" width="500" height="280"></canvas>
+            </div>
+        </div>
+
+        <!-- Summary table -->
+        <div class="metrics-table-wrapper">
+            <table class="metrics-table" id="metrics-summary-table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Stage</th>
+                        <th>Start (Step 0)</th>
+                        <th>Final</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="metric-badge psnr">L1</span></td>
+                        <td>Stage 1 (Flow)</td>
+                        <td>0.0570</td>
+                        <td class="highlight">0.0272</td>
+                    </tr>
+                    <tr>
+                        <td><span class="metric-badge ssim">SSIM</span></td>
+                        <td>Stage 1 (Flow)</td>
+                        <td>0.0577</td>
+                        <td class="highlight">0.0312</td>
+                    </tr>
+                    <tr>
+                        <td><span class="metric-badge mse">L1</span></td>
+                        <td>Stage 2 (Refine)</td>
+                        <td>0.0360</td>
+                        <td class="highlight">0.0670</td>
+                    </tr>
+                    <tr>
+                        <td><span class="metric-badge mae">SSIM</span></td>
+                        <td>Stage 2 (Refine)</td>
+                        <td>0.0356</td>
+                        <td class="highlight">0.3598</td>
+                    </tr>
+                    <tr>
+                        <td><span class="metric-badge psnr">L1</span></td>
+                        <td>Stage 3 (E2E)</td>
+                        <td>0.4898</td>
+                        <td class="highlight">0.0343</td>
+                    </tr>
+                    <tr>
+                        <td><span class="metric-badge ssim">SSIM</span></td>
+                        <td>Stage 3 (E2E)</td>
+                        <td>0.5129</td>
+                        <td class="highlight">0.0554</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Visual Results -->
+    <section class="section" id="visual">
+        <div class="section-header">
+            <div class="section-tag">Qualitative Results</div>
+            <h2>Visual Comparison</h2>
+            <p>Drag the slider to compare coarse vs refined interpolation</p>
+        </div>
+
+        <div class="comparison-container">
+            <div class="comparison-viewer" id="comparison-viewer">
+                <canvas id="coarseCanvas" class="comparison-canvas"></canvas>
+                <canvas id="refinedCanvas" class="comparison-canvas comparison-canvas-top"></canvas>
+                <div class="comparison-slider" id="comparison-slider">
+                    <div class="slider-line"></div>
+                    <div class="slider-handle">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M8 5l-5 7 5 7M16 5l5 7-5 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                </div>
+                <div class="comparison-label comparison-label-left">Coarse (Model 1)</div>
+                <div class="comparison-label comparison-label-right">Refined (Model 1+2)</div>
+            </div>
+            <div class="comparison-controls">
+                <button class="sample-btn active" data-sample="0" id="sample-btn-0">Hurricane Sample 1</button>
+                <button class="sample-btn" data-sample="1" id="sample-btn-1">Hurricane Sample 2</button>
+                <button class="sample-btn" data-sample="2" id="sample-btn-2">Cloud Formation</button>
+            </div>
+        </div>
+
+        <!-- Temporal interpolation demo -->
+        <div class="temporal-demo">
+            <h3>Recursive Temporal Enhancement</h3>
+            <p class="temporal-subtitle">30-min cadence → 7.5-min cadence (depth=2 recursive interpolation)</p>
+            <div class="timeline" id="timeline">
+                <div class="timeline-track">
+                    <div class="timeline-frame original">
+                        <div class="frame-thumb" id="tframe-0"></div>
+                        <span>t₀ (original)</span>
+                    </div>
+                    <div class="timeline-frame interpolated">
+                        <div class="frame-thumb" id="tframe-1"></div>
+                        <span>t₀.₂₅ (interp)</span>
+                    </div>
+                    <div class="timeline-frame interpolated">
+                        <div class="frame-thumb" id="tframe-2"></div>
+                        <span>t₀.₅ (interp)</span>
+                    </div>
+                    <div class="timeline-frame interpolated">
+                        <div class="frame-thumb" id="tframe-3"></div>
+                        <span>t₀.₇₅ (interp)</span>
+                    </div>
+                    <div class="timeline-frame original">
+                        <div class="frame-thumb" id="tframe-4"></div>
+                        <span>t₁ (original)</span>
+                    </div>
+                </div>
+                <div class="timeline-bar">
+                    <div class="timeline-progress" id="timeline-progress"></div>
+                </div>
+                <button class="play-btn" id="play-btn">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><polygon points="5,3 17,10 5,17"/></svg>
+                    Play Sequence
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Training -->
+    <section class="section section-dark" id="training">
+        <div class="section-header">
+            <div class="section-tag">Training Strategy</div>
+            <h2>3-Stage Training Pipeline</h2>
+            <p>Progressive training strategy for stable convergence</p>
+        </div>
+
+        <div class="training-stages">
+            <div class="stage-card" id="stage-card-1">
+                <div class="stage-num">Stage 1</div>
+                <h3>Flow Model Training</h3>
+                <div class="stage-details">
+                    <div class="stage-detail"><span>Target</span><strong>FlowInterpolator (IFNet)</strong></div>
+                    <div class="stage-detail"><span>Freeze</span><strong>Nothing</strong></div>
+                    <div class="stage-detail"><span>LR</span><strong>1e-4 (AdamW)</strong></div>
+                    <div class="stage-detail"><span>Epochs</span><strong>100</strong></div>
+                    <div class="stage-detail"><span>Loss</span><strong>L1 + SSIM + Flow Smooth</strong></div>
+                </div>
+                <div class="stage-chart">
+                    <canvas id="stage1Chart" width="320" height="160"></canvas>
+                </div>
+            </div>
+            <div class="stage-connector">→</div>
+            <div class="stage-card" id="stage-card-2">
+                <div class="stage-num">Stage 2</div>
+                <h3>Refinement Training</h3>
+                <div class="stage-details">
+                    <div class="stage-detail"><span>Target</span><strong>RefinementNet (U-Net+CBAM)</strong></div>
+                    <div class="stage-detail"><span>Freeze</span><strong>Flow Model ❄️</strong></div>
+                    <div class="stage-detail"><span>LR</span><strong>2e-4 (AdamW)</strong></div>
+                    <div class="stage-detail"><span>Epochs</span><strong>80</strong></div>
+                    <div class="stage-detail"><span>Loss</span><strong>+ Perceptual + Edge + Residual</strong></div>
+                </div>
+                <div class="stage-chart">
+                    <canvas id="stage2Chart" width="320" height="160"></canvas>
+                </div>
+            </div>
+            <div class="stage-connector">→</div>
+            <div class="stage-card" id="stage-card-3">
+                <div class="stage-num">Stage 3</div>
+                <h3>End-to-End Fine-tune</h3>
+                <div class="stage-details">
+                    <div class="stage-detail"><span>Target</span><strong>Full Pipeline</strong></div>
+                    <div class="stage-detail"><span>Freeze</span><strong>Nothing (all unfrozen)</strong></div>
+                    <div class="stage-detail"><span>LR</span><strong>1e-5 (AdamW)</strong></div>
+                    <div class="stage-detail"><span>Epochs</span><strong>30</strong></div>
+                    <div class="stage-detail"><span>Loss</span><strong>All losses combined</strong></div>
+                </div>
+                <div class="stage-chart">
+                    <canvas id="stage3Chart" width="320" height="160"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loss components -->
+        <div class="loss-grid">
+            <div class="loss-card" id="loss-l1">
+                <div class="loss-icon">📐</div>
+                <h4>L1 Loss</h4>
+                <p>Pixel-wise reconstruction</p>
+            </div>
+            <div class="loss-card" id="loss-ssim">
+                <div class="loss-icon">🔍</div>
+                <h4>SSIM Loss</h4>
+                <p>Structural similarity</p>
+            </div>
+            <div class="loss-card" id="loss-perceptual">
+                <div class="loss-icon">🧠</div>
+                <h4>Perceptual (VGG)</h4>
+                <p>Feature-level matching</p>
+            </div>
+            <div class="loss-card" id="loss-edge">
+                <div class="loss-icon">🌊</div>
+                <h4>Edge (Sobel)</h4>
+                <p>Cloud boundary preservation</p>
+            </div>
+            <div class="loss-card" id="loss-flow">
+                <div class="loss-icon">💨</div>
+                <h4>Flow Smoothness</h4>
+                <p>Total variation on flow</p>
+            </div>
+            <div class="loss-card" id="loss-residual">
+                <div class="loss-icon">⚖️</div>
+                <h4>Residual Reg.</h4>
+                <p>Small corrections bias</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Data Sources -->
+    <section class="section" id="data">
+        <div class="section-header">
+            <div class="section-tag">Data Pipeline</div>
+            <h2>Satellite Data Sources</h2>
+        </div>
+        <div class="data-cards">
+            <div class="data-card" id="data-goes">
+                <div class="data-card-icon">🇺🇸</div>
+                <h3>GOES-19 / GOES-16</h3>
+                <div class="data-specs">
+                    <span>Training Data</span>
+                    <span>AWS S3 Public</span>
+                    <span>10-min cadence</span>
+                    <span>Ch13 TIR</span>
+                </div>
+                <p>High-cadence geostationary imagery for training the interpolation models.</p>
+            </div>
+            <div class="data-card" id="data-insat">
+                <div class="data-card-icon">🇮🇳</div>
+                <h3>INSAT-3DS</h3>
+                <div class="data-specs">
+                    <span>Application Target</span>
+                    <span>MOSDAC</span>
+                    <span>30-min cadence</span>
+                    <span>TIR1 Band</span>
+                </div>
+                <p>Indian geostationary satellite — our target for temporal resolution enhancement.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>ISRO Hackathon 2026 — 2-Model Satellite Frame Interpolation Pipeline</p>
+            <p class="footer-sub">FlowInterpolator (IFNet) + RefinementNet (U-Net + CBAM) · PyTorch</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

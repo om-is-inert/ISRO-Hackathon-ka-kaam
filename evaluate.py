@@ -78,13 +78,29 @@ def main():
     print(f"\n{'='*60}")
     print(f"{'Metric':<10} {'Coarse (Model 1)':>18} {'Refined (Model 1+2)':>20}")
     print(f"{'='*60}")
+    
+    md_lines = [
+        "# 📊 Satellite Frame Interpolation Evaluation Report",
+        "",
+        "This report compares the quantitative performance of the coarse optical flow (Model 1) versus the full dual-stage refined output (Model 1 + Model 2).",
+        "",
+        "| Metric | Coarse (Model 1) | Refined (Model 1+2) | Improvement |",
+        "| :--- | :---: | :---: | :---: |"
+    ]
+    
     for m in ['PSNR', 'SSIM', 'MSE', 'MAE']:
         c_val = df_coarse[m].mean()
         r_val = df[m].mean()
         diff = r_val - c_val
         sign = '+' if diff > 0 else ''
         print(f"{m:<10} {c_val:>18.4f} {r_val:>18.4f}  ({sign}{diff:.4f})")
+        md_lines.append(f"| **{m}** | `{c_val:.4f}` | `{r_val:.4f}` | **`{sign}{diff:.4f}`** |")
     print(f"{'='*60}")
+
+    report_path = os.path.join(args.output, 'evaluation_report.md')
+    with open(report_path, 'w', encoding='utf-8') as f:
+        f.write('\n'.join(md_lines) + '\n')
+    print(f"\n[★] Markdown Benchmark Report saved to: {report_path}")
 
     # Plot per-frame metrics
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
@@ -99,7 +115,7 @@ def main():
     plt.suptitle('2-Model Interpolation: Coarse vs Refined', fontsize=14, fontweight='bold')
     plt.tight_layout()
     plt.savefig(os.path.join(args.output, 'metrics_comparison.png'), dpi=150)
-    print(f"\nPlot saved to {args.output}/metrics_comparison.png")
+    print(f"Plot saved to {args.output}/metrics_comparison.png")
 
 if __name__ == '__main__':
     main()
