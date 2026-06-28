@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SatFrame AI</title>
+    <meta name="theme-color" content="#111111">
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css?v=2">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,300&display=swap" rel="stylesheet">
+    <!-- Feather Icons for the UI -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    
+    <!-- Top Progress Bar -->
+    <div id="scroll-progress"></div>
+
+    <!-- Floating Navigation Tracking Sidebar -->
+    <nav class="floating-nav">
+        <div class="nav-indicator" id="nav-indicator"></div>
+        <a href="#hero" class="nav-dot" data-section="hero"></a>
+        <a href="#metrics" class="nav-dot" data-section="metrics"></a>
+        <a href="#comparison" class="nav-dot" data-section="comparison"></a>
+        <a href="#chart" class="nav-dot" data-section="chart"></a>
+        <a href="#architecture" class="nav-dot" data-section="architecture"></a>
+        <a href="#team" class="nav-dot" data-section="team"></a>
+    </nav>
+
+    <!-- Mobile Menu Trigger -->
+    <button id="mobile-menu-btn" class="mobile-menu-btn">
+        <div class="menu-btn-icon">
+            <i data-feather="plus"></i>
+        </div>
+        <div class="menu-btn-text">
+            <div class="menu-text-inner" id="menu-text-inner">
+                <span class="m-text">Menu</span>
+                <span class="m-text">Close</span>
+            </div>
+        </div>
+    </button>
+
+    <!-- Mobile Menu Container -->
+    <div id="mobile-menu" class="mobile-menu">
+        <div class="menu-underlay layer-1"></div>
+        <div class="menu-underlay layer-2"></div>
+        <div class="menu-panel">
+            <nav class="menu-nav">
+                <a href="#hero" class="menu-item">
+                    <div class="menu-text-wrap">
+                        <span class="menu-text">HOME</span>
+                    </div>
+                </a>
+                <a href="#comparison" class="menu-item">
+                    <div class="menu-text-wrap">
+                        <span class="menu-text">ABOUT</span>
+                    </div>
+                </a>
+                <a href="#architecture" class="menu-item">
+                    <div class="menu-text-wrap">
+                        <span class="menu-text">PROJECTS</span>
+                    </div>
+                </a>
+                <a href="#team" class="menu-item">
+                    <div class="menu-text-wrap">
+                        <span class="menu-text">CONTACT</span>
+                    </div>
+                </a>
+            </nav>
+            <div class="menu-footer">
+                <span class="footer-label">Socials</span>
+                <div class="footer-links">
+                    <a href="https://github.com" target="_blank">GitHub</a>
+                    <a href="#" target="_blank">Twitter</a>
+                    <a href="#" target="_blank">LinkedIn</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero-section observer-section">
+        <canvas id="hero-canvas"></canvas>
+        <div class="hero-content reveal-on-load">
+            <h1 class="hero-title">SatFrame AI</h1>
+            <p class="hero-subtitle" id="typewriter-text"></p>
+            <p class="hero-quote">ISRO Hackathon &middot; Geostationary Imagery &middot; Deep Learning</p>
+        </div>
+        <div class="scroll-indicator">
+            <i data-feather="chevron-down"></i>
+        </div>
+        <div class="cloud-divider">
+            <svg viewBox="0 0 1440 320" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#F5F5F5" d="
+                    M0,320 
+                    L0,220 
+                    C20,140 150,130 180,190 
+                    C200,100 360,90 380,180 
+                    C400,120 550,110 580,200 
+                    C610,90 740,80 770,170 
+                    C790,110 930,120 950,190 
+                    C980,100 1110,90 1140,160 
+                    C1170,110 1260,120 1290,180 
+                    C1320,120 1420,130 1440,200 
+                    L1440,320 Z
+                "/>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Metrics Section -->
+    <section id="metrics" class="content-section observer-section">
+        <div class="section-container">
+            <span class="section-label reveal-element">PERFORMANCE METRICS</span>
+            <h2 class="section-heading reveal-element">Does it work?</h2>
+            
+            <div class="metrics-grid">
+                <div class="metric-card reveal-element">
+                    <div class="metric-header">
+                        <span class="metric-name">SSIM</span>
+                    </div>
+                    <div class="metric-value"><span class="counter" data-target="0.9001" data-decimals="4">0.0000</span></div>
+                    <div class="metric-subvalue">
+                        Coarse: 0.8863 &rarr; <strong>Refined: 0.9001</strong>
+                        <span class="metric-indicator"><i data-feather="arrow-up-right"></i> +0.0138</span>
+                    </div>
+                    <div class="metric-desc">How similar the generated frame looks to the real one (higher = better)</div>
+                </div>
+                
+                <div class="metric-card reveal-element">
+                    <div class="metric-header">
+                        <span class="metric-name">PSNR</span>
+                    </div>
+                    <div class="metric-value"><span class="counter" data-target="29.59" data-decimals="2">0.00</span> <span class="unit">dB</span></div>
+                    <div class="metric-subvalue">
+                        Coarse: 28.18 &rarr; <strong>Refined: 29.59</strong>
+                        <span class="metric-indicator"><i data-feather="arrow-up-right"></i> +1.41 dB</span>
+                    </div>
+                    <div class="metric-desc">Signal quality of the prediction (higher = better)</div>
+                </div>
+                
+                <div class="metric-card reveal-element">
+                    <div class="metric-header">
+                        <span class="metric-name">MSE</span>
+                    </div>
+                    <div class="metric-value"><span class="counter" data-target="0.0042" data-decimals="4">0.0000</span></div>
+                    <div class="metric-subvalue">
+                        Coarse: 0.0047 &rarr; <strong>Refined: 0.0042</strong>
+                        <span class="metric-indicator"><i data-feather="arrow-down-right"></i> -10.6%</span>
+                    </div>
+                    <div class="metric-desc">Average pixel error (lower = better)</div>
+                </div>
+                
+                <div class="metric-card reveal-element">
+                    <div class="metric-header">
+                        <span class="metric-name">MAE</span>
+                    </div>
+                    <div class="metric-value"><span class="counter" data-target="0.0316" data-decimals="4">0.0000</span></div>
+                    <div class="metric-subvalue">
+                        Coarse: 0.0368 &rarr; <strong>Refined: 0.0316</strong>
+                        <span class="metric-indicator"><i data-feather="arrow-down-right"></i> -14.1%</span>
+                    </div>
+                    <div class="metric-desc">Consistent pixel accuracy across the full frame (lower = better)</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Section -->
+    <section id="comparison" class="content-section bg-white observer-section">
+        <div class="section-container">
+            <span class="section-label reveal-element">VISUAL PROOF</span>
+            <h2 class="section-heading reveal-element">Show me proof</h2>
+            <p class="section-tagline reveal-element">Drag to compare model output vs reality</p>
+            
+            <div class="comparison-layout reveal-element">
+                <div class="input-frame-col">
+                    <div class="image-card">
+                        <img src="assets/frame_t0.png" alt="Input Frame t0" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                        <div class="image-fallback" style="display:none">t₀</div>
+                    </div>
+                    <div class="image-label">Input Frame t₀</div>
+                </div>
+                
+                <div class="slider-col">
+                    <div class="slider-container" id="image-slider">
+                        <!-- Ground Truth (Background) -->
+                        <div class="slider-image-layer">
+                            <img src="assets/frame_t05_actual.png" alt="Actual t0.5" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                            <div class="image-fallback ground-truth" style="display:none">t₀.₅ (Actual)</div>
+                        </div>
+                        
+                        <!-- Interpolated (Foreground, clipped) -->
+                        <div class="slider-image-layer foreground" id="slider-foreground">
+                            <img src="assets/frame_t05_predicted.png" alt="Predicted t0.5" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                            <div class="image-fallback interpolated" style="display:none">t₀.₅</div>
+                        </div>
+                        
+                        <!-- Slider handle -->
+                        <div class="slider-handle pulse-hint" id="slider-handle">
+                            <div class="slider-line"></div>
+                            <div class="slider-button">
+                                <i data-feather="code"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Range Input -->
+                        <input type="range" min="0" max="100" value="50" class="slider-input" id="slider-input">
+                    </div>
+                    <div class="slider-labels">
+                        <span>Predicted t₀.₅</span>
+                        <span>Actual t₀.₅</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chart Section -->
+    <section id="chart" class="content-section observer-section">
+        <div class="section-container">
+            <span class="section-label reveal-element">PERFORMANCE INDEX</span>
+            <h2 class="section-heading reveal-element">How consistent is it?</h2>
+            <div class="chart-panel card reveal-element">
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Architecture Section -->
+    <section id="architecture" class="content-section bg-white observer-section">
+        <div class="section-container">
+            <span class="section-label reveal-element">PIPELINE DESIGN</span>
+            <h2 class="section-heading reveal-element">How does it work?</h2>
+            
+            <div class="architecture-diagram card">
+                <div class="pipeline">
+                    <div class="node input architecture-node">Frame t₀<br/>Frame t₁</div>
+                    <div class="arrow architecture-node"><i data-feather="arrow-right"></i></div>
+                    
+                    <div class="node-wrapper clickable architecture-node">
+                        <div class="node model model-1">IFNet<br/>(Model 1)</div>
+                        <div class="tooltip">300,943 params | Optical Flow Estimation | LR 1e-4 | 100 epochs</div>
+                    </div>
+                    
+                    <div class="arrow architecture-node"><i data-feather="arrow-right"></i></div>
+                    <div class="node intermediate architecture-node">Coarse<br/>Frame</div>
+                    <div class="arrow architecture-node"><i data-feather="arrow-right"></i></div>
+                    
+                    <div class="node-wrapper clickable architecture-node">
+                        <div class="node model model-2 glow">RefinementNet<br/>(Model 2)</div>
+                        <div class="tooltip">8,139,698 params | U-Net + CBAM Attention | LR 2e-4 | 50 epochs</div>
+                    </div>
+                    
+                    <div class="arrow architecture-node"><i data-feather="arrow-right"></i></div>
+                    <div class="node output architecture-node">Final<br/>Interpolated Frame</div>
+                </div>
+            </div>
+
+            <div class="training-stages">
+                <div class="stage-card reveal-element">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 100%"></div>
+                    </div>
+                    <div class="stage-header">
+                        <h3>Stage 1: Optical Flow</h3>
+                        <i data-feather="check-circle" class="check-icon"></i>
+                    </div>
+                    <ul class="stage-details">
+                        <li><span>Model</span> <strong>IFNet</strong></li>
+                        <li><span>Epochs</span> <strong>100</strong></li>
+                        <li><span>Learning Rate</span> <strong>1e-4</strong></li>
+                        <li><span>Loss</span> <strong>Flow Consistency</strong></li>
+                    </ul>
+                </div>
+                <div class="stage-card reveal-element">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 100%"></div>
+                    </div>
+                    <div class="stage-header">
+                        <h3>Stage 2: Refinement Network</h3>
+                        <i data-feather="check-circle" class="check-icon"></i>
+                    </div>
+                    <ul class="stage-details">
+                        <li><span>Model</span> <strong>RefinementNet</strong></li>
+                        <li><span>Epochs</span> <strong>50</strong></li>
+                        <li><span>Learning Rate</span> <strong>2e-4</strong></li>
+                        <li><span>Loss</span> <strong>Charbonnier + Census</strong></li>
+                    </ul>
+                </div>
+                <div class="stage-card reveal-element">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 100%"></div>
+                    </div>
+                    <div class="stage-header">
+                        <h3>Stage 3: E2E Fine-tuning</h3>
+                        <i data-feather="check-circle" class="check-icon"></i>
+                    </div>
+                    <ul class="stage-details">
+                        <li><span>Model</span> <strong>Full Pipeline</strong></li>
+                        <li><span>Epochs</span> <strong>50</strong></li>
+                        <li><span>Learning Rate</span> <strong>1e-5</strong></li>
+                        <li><span>Loss</span> <strong>Combined Loss</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section id="team" class="content-section footer-section observer-section">
+        <div class="section-container">
+            <span class="section-label reveal-element">THE PROJECT</span>
+            <h2 class="section-heading reveal-element">Who built this?</h2>
+            <div class="about-container reveal-element">
+                <p class="about-desc">
+                    SatFrame AI was built for the ISRO Hackathon 2025. 
+                    Our two-stage deep learning pipeline estimates optical flow 
+                    between consecutive geostationary satellite frames and synthesizes 
+                    a high-fidelity intermediate frame &mdash; effectively doubling the 
+                    temporal resolution of weather imagery without requiring new hardware or satellites.
+                </p>
+                <ul class="team-list">
+                    <li class="team-card reveal-element">
+                        <div class="member-name">Aditya</div>
+                        <div class="member-role">ML Architecture, Training Pipeline & Frontend Dashboard</div>
+                        <div class="member-links">
+                            <a href="https://github.com/AdiCodexy" target="_blank"><i data-feather="github"></i></a>
+                            <a href="https://www.linkedin.com/in/aditya-karale-2b589632a/" target="_blank"><i data-feather="linkedin"></i></a>
+                        </div>
+                    </li>
+                    <li class="team-card reveal-element">
+                        <div class="member-name">Om Pandey</div>
+                        <div class="member-role">ML Model Development & Training</div>
+                        <div class="member-links">
+                            <a href="[Om's github URL]" target="_blank"><i data-feather="github"></i></a>
+                            <a href="[Om's linkedin URL]" target="_blank"><i data-feather="linkedin"></i></a>
+                        </div>
+                    </li>
+                    <li class="team-card reveal-element">
+                        <div class="member-name">Niddesh</div>
+                        <div class="member-role">Frontend Development & Data Collection</div>
+                        <div class="member-links">
+                            <a href="[Niddesh's github URL]" target="_blank"><i data-feather="github"></i></a>
+                            <a href="[Niddesh's linkedin URL]" target="_blank"><i data-feather="linkedin"></i></a>
+                        </div>
+                    </li>
+                    <li class="team-card reveal-element">
+                        <div class="member-name">Anjan</div>
+                        <div class="member-role">Data Collection & Preprocessing</div>
+                        <div class="member-links">
+                            <a href="[Anjan's github URL]" target="_blank"><i data-feather="github"></i></a>
+                            <a href="[Anjan's linkedin URL]" target="_blank"><i data-feather="linkedin"></i></a>
+                        </div>
+                    </li>
+                </ul>
+                <div class="footer-links">
+                    <a href="https://github.com" target="_blank" class="github-link">
+                        <i data-feather="github"></i> View Repository
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="script.js?v=2"></script>
+</body>
+</html>
